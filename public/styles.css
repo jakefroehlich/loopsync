@@ -1,0 +1,39 @@
+html, body {
+    margin: 0px;
+    height: 100%;
+    width: 100%;
+}
+
+#root {
+    height: 100vh;
+    width: 100vw;
+    background-color: #00965c;
+    overflow: hidden;
+}
+
+.background {
+    background-color: #00d884;
+    height: 100%;
+    width: 100%;
+}
+
+.headerimg {
+    height: 40px;
+    width: 160px;
+}
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    font-weight: lighter;
+    justify-content: space-between;
+}
+
+.playButtonContainer {
+    width: 65%;
+    display: flex;
+    /* justify-content: flex-end; */
+    align-items: flex-end;
+}
