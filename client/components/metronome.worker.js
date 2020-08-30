@@ -1,9 +1,9 @@
 let timerID=null;
 let interval=100;
-let CACHE_NAME = 'my-site-cache-v1';
-var urlsToCache = [
+const CACHE_NAME = 'my-site-cache-v1';
+const urlsToCache = [
   '/',
-  './Metronome.js'
+  '../client/components/Metronome.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -17,7 +17,7 @@ self.addEventListener('install', (event) => {
 
 self.onmessage = (e) => {
 	if (e.data=="start") {
-        console.log("Worker starting!")
+        console.log("Worker starting!", e.data)
 		timerID=setInterval(() => {postMessage("tick");},interval)
 	}
 	else if (e.data.interval) {
@@ -28,7 +28,7 @@ self.onmessage = (e) => {
 		}
 	}
 	else if (e.data=="stop") {
-        console.log("Worker stopping!")
+        console.log("Worker stopping!", e.data)
 		clearInterval(timerID);
 		timerID=null;
 	}

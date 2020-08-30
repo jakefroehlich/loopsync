@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { setSink, setCon, updateInput, toggleInput, clearAudio } from "../store/actions"
+import { setSink, setCon, updateInput, toggleInput, clearAudio, setSinkVol } from "../store/actions"
 
 const Sink = ({
     sinkOneURL,
@@ -15,12 +15,17 @@ const Sink = ({
     sinkTwoSource,
     sinkThreeSource,
     sinkFourSource,
+    sinkOneVol,
+    sinkTwoVol,
+    sinkThreeVol,
+    sinkFourVol,
     setAudio,
     setLength,
     setContext,
     controls,
     sinkNum,
     handleDelete,
+    handleVol,
     dispatch
 }) => {
     //Assigning the correct audio URL from state based on the Sink Number
@@ -68,6 +73,21 @@ const Sink = ({
     };
 
     const soundSource = soundSourcegen();
+
+    const soundVolgen = () => {
+        switch (sinkNum) {
+            case 1:
+                return sinkOneVol;
+            case 2:
+                return sinkTwoVol;
+            case 3:
+                return sinkThreeVol;
+            case 4:
+                return sinkFourVol;
+        }
+    };
+
+    const soundVol = soundVolgen();
 
     //Defining the pieces used by my Sink Component
     let audioContext;
@@ -130,6 +150,11 @@ const Sink = ({
         getData(soundURL);
     }
 
+    if (soundContext && soundVol) {
+    const gainNode = soundContext.createGain()
+    gainNode.gain.value = soundVol;
+    }
+
     //Defining the recorder and how it dispatches to state
     let mediaRecorder;
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -161,10 +186,18 @@ const Sink = ({
     //Component
     return (
         <div className="sink">
-            <div className="sinkimg"></div>
             {recordButton}
             {stopRecButton}
-            {/* {startButton} */}
+            <h2>Volume</h2>
+            <input 
+                type="range" 
+                id="volume" 
+                min="0" 
+                max="2" 
+                defaultValue="1" 
+                step="0.01"
+                onChange={(e) => handleVol(e, sinkNum)}>
+                </input>
             <audio
                 className="sinkaudio"
                 src={soundURL}
@@ -186,7 +219,11 @@ const mapState = ({ audio, controls }) => {
         sinkOneSource,
         sinkTwoSource,
         sinkThreeSource,
-        sinkFourSource } = audio;
+        sinkFourSource,
+        sinkOneVol,
+        sinkTwoVol,
+        sinkThreeVol,
+        sinkFourVol } = audio;
     return {
         sinkOneURL,
         sinkTwoURL,
@@ -200,6 +237,10 @@ const mapState = ({ audio, controls }) => {
         sinkTwoSource,
         sinkThreeSource,
         sinkFourSource,
+        sinkOneVol,
+        sinkTwoVol,
+        sinkThreeVol,
+        sinkFourVol,
         controls
     }
 }
@@ -210,12 +251,14 @@ const mapDispatch = (dispatch) => {
     const setLength = (length) => dispatch(updateInput("length", length));
     const togglePlay = () => dispatch(toggleInput("play"));
     const handleDelete = (sinkNum) => dispatch(clearAudio(sinkNum));
+    const handleVol = (e, sinkNum) => dispatch(setSinkVol(sinkNum, e.target.value));
     return {
         setAudio,
         setLength,
         togglePlay,
         setContext,
-        handleDelete, 
+        handleDelete,
+        handleVol,
         dispatch
     }
 }

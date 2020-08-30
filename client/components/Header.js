@@ -23,7 +23,7 @@ const Header = ({ audio, controls, togglePlay, handleChange }) => {
         <div>
             <input 
                 type="range" 
-                min={60} 
+                min={40} 
                 max={140}
                 onChange={(e) => handleChange(e)}></input>
                 <div>

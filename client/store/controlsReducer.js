@@ -3,10 +3,11 @@ import TYPES from "./types";
 const controlsReducer = (
     state = {
         play: false,
+        playing: false,
         length: 0,
         tempo: 60,
         recording: false,
-        metronome: true,
+        metronome: false,
     },
     action
 ) => {

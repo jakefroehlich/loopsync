@@ -1,10 +1,17 @@
-import React from "react";
+import React, {useEffect} from "react";
 import { connect } from "react-redux";
-import { toggleInput } from "../store/actions";
+import { toggleInput, setCon, updateMetInput } from "../store/actions";
 // import Worker from "./metronome.worker.js";
 
-const Metronome = ({ audio, controls, dispatch }) => {
-    let audioContext = audio.sinkOneContext ? audio.sinkOneContext : new AudioContext();
+const Metronome = ({ audio, controls, dispatch, handleClick }) => {
+    useEffect(() => {
+        audioContext = new AudioContext();
+        dispatch(setCon("M", null, audioContext));
+    }, [])
+
+    console.log("controls.metronome", controls.metronome)
+    
+    let audioContext;
     let current16thNote;
     let tempo = controls.tempo;
     let lookahead = 25.0;
@@ -12,6 +19,7 @@ const Metronome = ({ audio, controls, dispatch }) => {
     let nextNoteTime = 0.0;
     let noteLength = 0.05;
     let notesInQueue = [];
+
 
     const nextNote = () => {
         let secondsPerBeat = 60 / tempo;
@@ -26,8 +34,8 @@ const Metronome = ({ audio, controls, dispatch }) => {
     const scheduleNote = (beatNumber, time) => {
         notesInQueue.push({ note: beatNumber, time: time });
 
-        var osc = audioContext.createOscillator();
-        osc.connect(audioContext.destination);
+        let osc = audio.metronomeContext.createOscillator();
+        osc.connect(audio.metronomeContext.destination);
         if (beatNumber % 16 === 0)
             osc.frequency.value = 880.0;
         else if (beatNumber % 4 === 0)
@@ -40,41 +48,33 @@ const Metronome = ({ audio, controls, dispatch }) => {
     }
 
     const scheduler = () => {
-        while (nextNoteTime < audioContext.currentTime + scheduleAheadTime) {
+        while (nextNoteTime < audio.metronomeContext.currentTime + scheduleAheadTime) {
             scheduleNote(current16thNote, nextNoteTime);
             nextNote();
         }
     }
 
     const play = () => {
-        dispatch(toggleInput("metronome"))
-        console.log('metro status', controls.metronome, "@ tempo", controls.tempo)
-        if (controls.metronome) {
+        console.log('metro status', controls.metronome, "context", audio.metronomeContext);
+        if (!controls.metronome && !controls.playing) {
             current16thNote = 0;
-            nextNoteTime = audioContext.currentTime;
+            nextNoteTime = audio.metronomeContext.currentTime;
             timerWorker.postMessage("start");
-            return "stop";
-        } else {
-            timerWorker.postMessage("stop");
-            return "play";
+            audio.metronomeContext.resume();
+            dispatch(toggleInput("metronome"));
+        } else if (controls.playing){
+            console.log('else')
+            audio.metronomeContext.suspend();
+        } else if (!controls.playing){
+            console.log('else 2')
+            audio.metronomeContext.resume();
         }
     }
-
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./components/metronome.worker.js')
-            .then((registration) => {
-            console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }, (err) => {
-            console.log('ServiceWorker registration failed: ', err);
-          });
-        });
-      }
 
     let timerWorker;
     if (typeof (Worker) !== "undefined") {
         if (typeof (timerWorker) == "undefined") {
-            timerWorker = new Worker("./metronome.worker.js", {type: "module" });
+            timerWorker = new Worker("./metronome.worker.js");
             // timerWorker = new Worker();
         }
     };
@@ -91,8 +91,9 @@ const Metronome = ({ audio, controls, dispatch }) => {
 
     return (<div>
         <button
-            onClick={() => play()}>{controls.metronome ? "On" : "Off"}</button>
-    </div>)
+            onClick={() => handleClick(play)}>{!controls.playing ? "On" : "Off"}
+                </button>
+        </div>)
 }
 
 const mapState = ({ audio, controls }) => {
@@ -103,8 +104,13 @@ const mapState = ({ audio, controls }) => {
 }
 
 const mapDispatch = (dispatch) => {
+    const handleClick = (callback) => {
+        dispatch(toggleInput("playing"));
+        callback();
+    }
     return {
-        dispatch
+        dispatch,
+        handleClick
     };
 }
 

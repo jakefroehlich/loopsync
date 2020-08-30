@@ -8,6 +8,12 @@ const setSink = (url, sinkNum, source, context) => ({
   context
 });
 
+const setSinkVol = (sinkNum, value) => ({
+  type: TYPES.SET_SINK_VOL,
+  sinkNum,
+  value
+})
+
 const setCon = (sinkNum, source, context) => ({
   type: TYPES.SET_CONTEXT,
   sinkNum,
@@ -20,6 +26,12 @@ const updateInput = (name, value) => ({
   name,
   value,
 });
+
+const updateMetInput = (name, value) => ({
+  type: TYPES.UPDATE_MET_INPUT,
+  name,
+  value
+})
 
 const toggleInput = (name) => ({
   type: TYPES.TOGGLE_INPUT,
@@ -39,7 +51,9 @@ module.exports = {
   setSink,
   updateInput,
   clearInput,
+  updateMetInput,
   toggleInput,
   clearAudio,
-  setCon
+  setCon,
+  setSinkVol
 }
